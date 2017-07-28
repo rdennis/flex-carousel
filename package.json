@@ -22,6 +22,8 @@
     "prebuild": "npm run lint",
     "build": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.js",
     "build:min": "npm run build && babel src/flex-carousel.js --out-file build/flex-carousel.min.js --presets=babili",
+    "watch": "npm run build -- --watch",
+    "web": "npm run -s build && http-server ./",
     "test": "npm run -s build && http-server ./"
   },
   "repository": {
