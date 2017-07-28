@@ -1,0 +1,37 @@
+{
+  "name": "flex-carousel",
+  "private": true,
+  "version": "0.0.1",
+  "description": "A carousel using flexbox.",
+  "main": "build/flex-carousel.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-preset-babili": "^0.1.4",
+    "babel-preset-env": "^1.6.0",
+    "eslint": "^4.3.0",
+    "http-server": "^0.10.0"
+  },
+  "scripts": {
+    "clean": "rm -rf build",
+    "lint": "eslint src/**.js",
+    "prebuild": "npm run lint",
+    "build": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.js",
+    "build:min": "npm run build && babel src/flex-carousel.js --out-file build/flex-carousel.min.js --presets=babili",
+    "test": "npm run -s build && http-server ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdennis/flex-carousel.git"
+  },
+  "author": "Robert Dennis <rdennis.dev@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rdennis/flex-carousel/issues"
+  },
+  "homepage": "https://github.com/rdennis/flex-carousel#readme"
+}
