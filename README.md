@@ -40,7 +40,7 @@ Available properties:
 
 ## JS Initialization
 
-By default, all tags marked with `[data-flex-carousel]` or `[data-flex-carousel-control]` are initialized when flex-carousel loads. This can prevented by stopping the `fc:init` event on the `document`. You can then create the components yourself.
+By default, all tags marked with `[data-flex-carousel]` or `[data-flex-carousel-control]` are initialized when flex-carousel loads. This can be prevented by stopping the `fc:init` event on the `document`. You can then create the components yourself.
 
 ```javascript
 document.addEventListener('fc:init', (e) => {
