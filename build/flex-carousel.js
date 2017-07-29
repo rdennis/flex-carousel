@@ -256,8 +256,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
             return new FlexCarousel(el);
         });
-        document.querySelectorAll('[data-flex-control],[flex-control]').forEach(function (el) {
-            return new FlexCarousel(el);
+        document.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach(function (el) {
+            return new FlexCarouselControl(el);
         });
     });
 

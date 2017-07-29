@@ -206,7 +206,7 @@
 
     document.addEventListener('fc:init', function () {
         document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
-        document.querySelectorAll('[data-flex-control],[flex-control]').forEach((el) => new FlexCarousel(el));
+        document.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
     });
 
     document.dispatchEvent(new CustomEvent('fc:init'));
