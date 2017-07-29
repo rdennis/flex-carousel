@@ -16,10 +16,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     var _registry = {};
 
+    var _idSeed = 0;
+
     var _defaults = {
         direction: DIRECTION.FORWARD,
         speed: 5000
     };
+
+    function _getRegistrySet(name) {
+        return _registry[name] || new Set();
+    }
+
+    function _addRegistryValue(name, carousel) {
+        (_registry[name] = _registry[name] || new Set()).add(carousel);
+    }
 
     function _attributeToDatasetName(attribute) {
         return attribute.replace(_datasetReplacer, function (match, letter) {
@@ -54,6 +64,44 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }, {});
     }
 
+    function _getElementId(el) {
+        var id = el.getAttribute('id');
+
+        if (!id) {
+            id = 'flex-carousel-' + ++_idSeed;
+            el.setAttribute('id', id);
+        }
+
+        return id;
+    }
+
+    function _setAriaVisibility(items, currentIndex) {
+        if (items && items.length > 0) {
+            for (var i = 0, l = items.length; i < l; i++) {
+                var item = items.item(i);
+                item.setAttribute('aria-hidden', i === currentIndex);
+            }
+        }
+    }
+
+    function _setAriaControls(control, targets) {
+        var ariaControls = void 0;
+
+        // make sure we have a target, element, and no element[aria-controls] value
+        if (control && targets && targets.size && control.el && !(ariaControls = control.el.getAttribute('aria-controls'))) {
+            ariaControls = '';
+
+            targets.forEach(function (target) {
+                if (target && target.el) {
+                    var id = target.el.getAttribute('id');
+                    ariaControls += ' ' + id;
+                }
+            });
+
+            control.el.setAttribute('aria-controls', ariaControls.trim());
+        }
+    }
+
     var FlexCarousel = function () {
         function FlexCarousel(el, config) {
             var _this = this;
@@ -67,8 +115,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             this.settings = Object.assign({}, _defaults, config);
 
             this.el = el;
+            this.id = _getElementId(this.el);
             this.name = _getElementData(el, 'flex-carousel').split(':')[0];
-            this.current = 0;
+            this.currentIndex = 0;
 
             this.items = this.el.children;
             this.itemCount = this.items.length;
@@ -82,7 +131,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 item.style.flex = '1 0 auto';
             }
 
-            _registry[this.name] = (_registry[this.name] || new Set()).add(this);
+            _addRegistryValue(this.name, this);
 
             // listen for events
             ['slide', 'play', 'pause'].forEach(function (event) {
@@ -91,24 +140,24 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 });
             });
 
+            _setAriaVisibility(this.items, this.currentIndex);
             this.play();
         }
 
         _createClass(FlexCarousel, [{
             key: 'slide',
             value: function slide(direction) {
-                this.current = this.getNextItem(direction);
-
-                var position = this.current / this.itemCount * 100;
-
+                this.currentIndex = this.getNextItem(direction);
+                var position = this.currentIndex / this.itemCount * 100;
                 this.el.style.transform = 'translate(-' + position + '%)';
+                _setAriaVisibility(this.items, this.currentIndex);
             }
         }, {
             key: 'play',
             value: function play() {
                 var _this2 = this;
 
-                var currentItem = this.items.item(this.current);
+                var currentItem = this.items.item(this.currentIndex);
                 var settings = Object.assign({}, this.settings, _getItemElementData(currentItem));
 
                 this._timeout = w.setTimeout(function () {
@@ -128,9 +177,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                 if (typeof direction === 'string') {
                     if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                        index = this.current + 1;
+                        index = this.currentIndex + 1;
                     } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                        index = this.current - 1;
+                        index = this.currentIndex - 1;
                     } else {
                         index = parseInt(direction, 10);
                     }
@@ -168,6 +217,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             this.param = _getElementData$split2[2];
 
 
+            _setAriaControls(this, _getRegistrySet(this.targetName));
             this.el.addEventListener('click', function () {
                 return _this3.onclick();
             });
@@ -178,7 +228,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function onclick() {
                 var _this4 = this;
 
-                var targets = _registry[this.targetName] || [];
+                var targets = _getRegistrySet(this.targetName);
 
                 targets.forEach(function (target) {
                     if (target && target.el) {

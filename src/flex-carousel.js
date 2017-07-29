@@ -4,14 +4,25 @@
         REVERSE: 'reverse'
     };
 
+
     const _datasetReplacer = /-(\w)?/g;
 
     const _registry = {};
+
+    let _idSeed = 0;
 
     let _defaults = {
         direction: DIRECTION.FORWARD,
         speed: 5000
     };
+
+    function _getRegistrySet(name) {
+        return _registry[name] || new Set();
+    }
+
+    function _addRegistryValue(name, carousel) {
+        (_registry[name] = (_registry[name] || new Set())).add(carousel);
+    }
 
     function _attributeToDatasetName(attribute) {
         return attribute.replace(_datasetReplacer, (match, letter) => letter.toUpperCase());
@@ -41,6 +52,44 @@
         }, {});
     }
 
+    function _getElementId(el) {
+        let id = el.getAttribute('id');
+
+        if (!id) {
+            id = `flex-carousel-${++_idSeed}`;
+            el.setAttribute('id', id);
+        }
+
+        return id;
+    }
+
+    function _setAriaVisibility(items, currentIndex) {
+        if (items && items.length > 0) {
+            for (let i = 0, l = items.length; i < l; i++) {
+                let item = items.item(i);
+                item.setAttribute('aria-hidden', i === currentIndex);
+            }
+        }
+    }
+
+    function _setAriaControls(control, targets) {
+        let ariaControls;
+
+        // make sure we have a target, element, and no element[aria-controls] value
+        if (control && targets && targets.size && control.el && !(ariaControls = control.el.getAttribute('aria-controls'))) {
+            ariaControls = '';
+
+            targets.forEach((target) => {
+                if (target && target.el) {
+                    let id = target.el.getAttribute('id');
+                    ariaControls += ` ${id}`;
+                }
+            });
+
+            control.el.setAttribute('aria-controls', ariaControls.trim());
+        }
+    }
+
 
     class FlexCarousel {
         constructor(el, config) {
@@ -51,8 +100,9 @@
             this.settings = Object.assign({}, _defaults, config);
 
             this.el = el;
+            this.id = _getElementId(this.el);
             this.name = _getElementData(el, 'flex-carousel').split(':')[0];
-            this.current = 0;
+            this.currentIndex = 0;
 
             this.items = this.el.children;
             this.itemCount = this.items.length;
@@ -66,26 +116,26 @@
                 item.style.flex = '1 0 auto';
             }
 
-            _registry[this.name] = (_registry[this.name] || new Set()).add(this);
+            _addRegistryValue(this.name, this);
 
             // listen for events
             ['slide', 'play', 'pause'].forEach((event) => {
                 this.el.addEventListener(event, (e) => this[event](e.detail));
             });
 
+            _setAriaVisibility(this.items, this.currentIndex);
             this.play();
         }
 
         slide(direction) {
-            this.current = this.getNextItem(direction);
-
-            let position = (this.current / this.itemCount) * 100;
-
+            this.currentIndex = this.getNextItem(direction);
+            let position = (this.currentIndex / this.itemCount) * 100;
             this.el.style.transform = `translate(-${position}%)`;
+            _setAriaVisibility(this.items, this.currentIndex);
         }
 
         play() {
-            let currentItem = this.items.item(this.current);
+            let currentItem = this.items.item(this.currentIndex);
             let settings = Object.assign({}, this.settings, _getItemElementData(currentItem));
 
             this._timeout = w.setTimeout(() => {
@@ -103,9 +153,9 @@
 
             if (typeof direction === 'string') {
                 if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                    index = this.current + 1;
+                    index = this.currentIndex + 1;
                 } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                    index = this.current - 1;
+                    index = this.currentIndex - 1;
                 } else {
                     index = parseInt(direction, 10);
                 }
@@ -128,11 +178,12 @@
             // get data from format "<targetName>:<event>:<param>"
             [this.targetName, this.event, this.param] = _getElementData(el, 'flex-carousel-control').split(':');
 
+            _setAriaControls(this, _getRegistrySet(this.targetName));
             this.el.addEventListener('click', () => this.onclick());
         }
 
         onclick() {
-            let targets = _registry[this.targetName] || [];
+            let targets = _getRegistrySet(this.targetName);
 
             targets.forEach((target) => {
                 if (target && target.el) {

@@ -20,7 +20,7 @@
     "clean": "rm -rf build",
     "lint": "eslint src/**.js",
     "prebuild": "npm run lint",
-    "build": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.js",
+    "build": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.js --source-maps",
     "build:min": "npm run build && babel src/flex-carousel.js --out-file build/flex-carousel.min.js --presets=babili",
     "watch": "npm run build -- --watch",
     "web": "npm run -s build && http-server ./",
