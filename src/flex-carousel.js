@@ -120,7 +120,7 @@
 
             // listen for events
             ['slide', 'play', 'pause'].forEach((event) => {
-                this.el.addEventListener(event, (e) => this[event](e.detail));
+                this.el.addEventListener(`fc:${event}`, (e) => this[event](e.detail));
             });
 
             _setAriaVisibility(this.items, this.currentIndex);
@@ -168,6 +168,14 @@
             index = index > this.itemCount - 1 ? 0 : index;
             return index;
         }
+
+        static get defaults() {
+            return _defaults;
+        }
+
+        static set defaults(defaults) {
+            _defaults = defaults;
+        }
     }
 
     class FlexCarouselControl {
@@ -187,7 +195,7 @@
 
             targets.forEach((target) => {
                 if (target && target.el) {
-                    target.el.dispatchEvent(new CustomEvent(this.event, { detail: this.param }));
+                    target.el.dispatchEvent(new CustomEvent(`fc:${this.event}`, { detail: this.param }));
                 }
             });
         }
@@ -195,4 +203,11 @@
 
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
+
+    document.addEventListener('fc:init', function () {
+        document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
+        document.querySelectorAll('[data-flex-control],[flex-control]').forEach((el) => new FlexCarousel(el));
+    });
+
+    document.dispatchEvent(new CustomEvent('fc:init'));
 })(window);

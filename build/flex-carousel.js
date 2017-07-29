@@ -135,7 +135,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             // listen for events
             ['slide', 'play', 'pause'].forEach(function (event) {
-                _this.el.addEventListener(event, function (e) {
+                _this.el.addEventListener('fc:' + event, function (e) {
                     return _this[event](e.detail);
                 });
             });
@@ -192,6 +192,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 index = index > this.itemCount - 1 ? 0 : index;
                 return index;
             }
+        }], [{
+            key: 'defaults',
+            get: function get() {
+                return _defaults;
+            },
+            set: function set(defaults) {
+                _defaults = defaults;
+            }
         }]);
 
         return FlexCarousel;
@@ -232,7 +240,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                 targets.forEach(function (target) {
                     if (target && target.el) {
-                        target.el.dispatchEvent(new CustomEvent(_this4.event, { detail: _this4.param }));
+                        target.el.dispatchEvent(new CustomEvent('fc:' + _this4.event, { detail: _this4.param }));
                     }
                 });
             }
@@ -243,6 +251,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
+
+    document.addEventListener('fc:init', function () {
+        document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
+            return new FlexCarousel(el);
+        });
+        document.querySelectorAll('[data-flex-control],[flex-control]').forEach(function (el) {
+            return new FlexCarousel(el);
+        });
+    });
+
+    document.dispatchEvent(new CustomEvent('fc:init'));
 })(window);
 
 //# sourceMappingURL=flex-carousel.js.map
