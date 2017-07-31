@@ -28,25 +28,37 @@
             min-height: 300px;
             background: rgba(255, 255, 255, 0.3);
         }
+
+        .item-1 {
+            background: red url(http://placehold.it/1000x1000/ff0000) center/cover;
+        }
+
+        .item-2 {
+            background: green url(http://placehold.it/1000x1000/00ff00) center/cover;
+        }
+
+        .item-3 {
+            background: blue url(http://placehold.it/1000x1000/0000ff) center/cover;
+        }
     </style>
 </head>
 
 <body>
     <div class="carousel-wrapper">
         <div class="carousel" data-flex-carousel="carousel">
-            <div class="carousel-item" style="background: url(http://placehold.it/1000x1000/ff000?text=&nbsp;) center/cover">
+            <div class="carousel-item item-1">
                 <div class="carousel-caption">
                     <h2>Item 1</h2>
                     <p>This is item 1.</p>
                 </div>
             </div>
-            <div class="carousel-item" data-flex-carousel-item="speed: 2000" style="background: url(http://placehold.it/1000x1000/00ff00?text=&nbsp;) center/cover">
+            <div class="carousel-item item-2" data-flex-carousel-item="speed: 2000">
                 <div class="carousel-caption">
                     <h2>Item 2</h2>
                     <p>This is item 2.</p>
                 </div>
             </div>
-            <div class="carousel-item" data-flex-carousel-item="speed: 3000" style="background: url(http://placehold.it/1000x1000/0000ff?text=&nbsp;) center/cover">
+            <div class="carousel-item item-3" data-flex-carousel-item="speed: 3000">
                 <div class="carousel-caption">
                     <h2>Item 3</h2>
                     <p>This is item 3.</p>
@@ -54,9 +66,9 @@
             </div>
         </div>
         <ul class="carousel-control indicators">
-            <li class="indicator" data-flex-carousel-control="carousel:slide:0">1</li>
-            <li class="indicator" data-flex-carousel-control="carousel:slide:1">2</li>
-            <li class="indicator" data-flex-carousel-control="carousel:slide:2">3</li>
+            <li class="indicator" data-flex-carousel-control="carousel:slide:0">Item 1</li>
+            <li class="indicator" data-flex-carousel-control="carousel:slide:1">Item 2</li>
+            <li class="indicator" data-flex-carousel-control="carousel:slide:2">Item 3</li>
         </ul>
         <button type="button" class="carousel-control prev" data-flex-carousel-control="carousel:slide:-1">Prev</button>
         <button type="button" class="carousel-control next" data-flex-carousel-control="carousel:slide:+1">Next</button>
