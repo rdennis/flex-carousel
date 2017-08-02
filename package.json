@@ -13,6 +13,7 @@
     "babel-core": "^6.25.0",
     "babel-preset-babili": "^0.1.4",
     "babel-preset-env": "^1.6.0",
+    "documentation": "^5.0.1",
     "eslint": "^4.3.0",
     "http-server": "^0.10.0"
   },
@@ -23,6 +24,7 @@
     "build": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.js --source-maps",
     "build:min": "npm run build && babel src/flex-carousel.js --out-file build/flex-carousel.min.js --presets=babili",
     "watch": "npm run build -- --watch",
+    "documentation": "documentation readme src/flex-carousel.js --section=API",
     "web": "npm run -s build && http-server ./",
     "test": "npm run -s build && http-server ./"
   },

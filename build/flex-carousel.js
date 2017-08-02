@@ -6,7 +6,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-(function (w) {
+(function (w, d) {
     var DIRECTION = {
         FORWARD: 'forward',
         REVERSE: 'reverse'
@@ -22,6 +22,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         direction: DIRECTION.FORWARD,
         speed: 5000
     };
+
+    function _tryParseNumber(value) {
+        // convert to number if value is a number, or string containing a valid numberic representation
+        // filter out null, '', and  '    '
+        // note: isNaN(<null || ''>) return false, so we catch them with !value first
+        // note: isNaN('   ') returns false, so we catch it with !trim(value)
+        return !value || !String.prototype.trim.call(value) || isNaN(value) ? value : +value;
+    }
 
     function _getRegistrySet(name) {
         return _registry[name] || new Set();
@@ -54,9 +62,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             k = k.trim();
 
-            if (/\d+(?:\.\d*)?/.test(v)) {
-                v = parseFloat(v);
-            }
+            v = _tryParseNumber(v);
 
             obj[k] = v;
 
@@ -73,6 +79,27 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
 
         return id;
+    }
+
+    function _getNextItem(carousel, direction) {
+        var index = 0;
+
+        if (typeof direction === 'string') {
+            if (direction === '+1' || direction === DIRECTION.FORWARD) {
+                index = carousel.currentIndex + 1;
+            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
+                index = carousel.currentIndex - 1;
+            } else {
+                index = parseInt(direction, 10) || 0;
+            }
+        } else if (typeof direction === 'number') {
+            index = direction;
+        }
+
+        // if < 0, wrap to end, if > itemCount -1, wrap to beginning
+        index = index < 0 ? carousel.itemCount - 1 : index;
+        index = index > carousel.itemCount - 1 ? 0 : index;
+        return index;
     }
 
     function _setAriaVisibility(items, currentIndex) {
@@ -102,7 +129,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
     }
 
+    /**
+     * Class responsible for carousel functionality.
+     */
+
     var FlexCarousel = function () {
+        /**
+         * Creates a FlexCarousel.
+         * @param {Element} el - The Element to use as a carousel.
+         * @param {Object} config - Configuration for the carousel.
+         * @param {string} config.direction - The initial direction of the carousel's slide.
+         * @param {number} config.speed - The default speed of the carousel's slide in ms. 
+         */
         function FlexCarousel(el, config) {
             var _this = this;
 
@@ -144,14 +182,25 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             this.play();
         }
 
+        /**
+         * Moves the carousel to the given position.
+         * @param {(number|string)} direction - The zero based index of the target item, or the strings `'forward'` (or `'+1'`), or `'backward'` (or `'-1'`).
+         */
+
+
         _createClass(FlexCarousel, [{
             key: 'slide',
             value: function slide(direction) {
-                this.currentIndex = this.getNextItem(direction);
+                this.currentIndex = _getNextItem(this, direction);
                 var position = this.currentIndex / this.itemCount * 100;
                 this.el.style.transform = 'translate(-' + position + '%)';
                 _setAriaVisibility(this.items, this.currentIndex);
             }
+
+            /**
+             * Starts automatically moving the carousel.
+             */
+
         }, {
             key: 'play',
             value: function play() {
@@ -165,38 +214,34 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     _this2.play();
                 }, settings.speed);
             }
+
+            /**
+             * Stops automatically moving the carousel.
+             */
+
         }, {
             key: 'pause',
             value: function pause() {
                 w.clearTimeout(this._timeout);
             }
-        }, {
-            key: 'getNextItem',
-            value: function getNextItem(direction) {
-                var index = 0;
 
-                if (typeof direction === 'string') {
-                    if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                        index = this.currentIndex + 1;
-                    } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                        index = this.currentIndex - 1;
-                    } else {
-                        index = parseInt(direction, 10);
-                    }
-                } else if (typeof direction === 'number') {
-                    index = direction;
-                }
+            /**
+             * Gets the global default settings for carousels.
+             * @static
+             */
 
-                // if < 0, wrap to end, if > itemCount -1, wrap to beginning
-                index = index < 0 ? this.itemCount - 1 : index;
-                index = index > this.itemCount - 1 ? 0 : index;
-                return index;
-            }
         }], [{
             key: 'defaults',
             get: function get() {
                 return _defaults;
-            },
+            }
+
+            /**
+             * Sets the global default settings for carousels.
+             * @static
+             * @param {Object} defaults - The default global options.
+             */
+            ,
             set: function set(defaults) {
                 _defaults = defaults;
             }
@@ -205,7 +250,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return FlexCarousel;
     }();
 
+    /**
+     * Class responsible for carousel control functionality.
+     */
+
+
     var FlexCarouselControl = function () {
+        /**
+         * Creates a FlexCarouselControl.
+         * @param {Element} el - The Element to use as a carousel control. 
+         */
         function FlexCarouselControl(el) {
             var _this3 = this;
 
@@ -231,6 +285,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             });
         }
 
+        /**
+         * The handler called when the control is clicked.
+         */
+
+
         _createClass(FlexCarouselControl, [{
             key: 'onclick',
             value: function onclick() {
@@ -252,16 +311,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
 
-    document.addEventListener('fc:init', function () {
-        document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
+    d.addEventListener('fc:init', function () {
+        d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
             return new FlexCarousel(el);
         });
-        document.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach(function (el) {
+        d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach(function (el) {
             return new FlexCarouselControl(el);
         });
     });
 
     document.dispatchEvent(new CustomEvent('fc:init'));
-})(window);
+})(window, document);
 
 //# sourceMappingURL=flex-carousel.js.map

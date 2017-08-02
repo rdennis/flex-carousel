@@ -1,4 +1,4 @@
-(function (w) {
+(function (w, d) {
     const DIRECTION = {
         FORWARD: 'forward',
         REVERSE: 'reverse'
@@ -15,6 +15,14 @@
         direction: DIRECTION.FORWARD,
         speed: 5000
     };
+
+    function _tryParseNumber(value) {
+        // convert to number if value is a number, or string containing a valid numberic representation
+        // filter out null, '', and  '    '
+        // note: isNaN(<null || ''>) return false, so we catch them with !value first
+        // note: isNaN('   ') returns false, so we catch it with !trim(value)
+        return (!value || !String.prototype.trim.call(value) || isNaN(value)) ? value : +value;
+    }
 
     function _getRegistrySet(name) {
         return _registry[name] || new Set();
@@ -42,9 +50,7 @@
 
             k = k.trim();
 
-            if (/\d+(?:\.\d*)?/.test(v)) {
-                v = parseFloat(v);
-            }
+            v = _tryParseNumber(v);
 
             obj[k] = v;
 
@@ -61,6 +67,27 @@
         }
 
         return id;
+    }
+
+    function _getNextItem(carousel, direction) {
+        let index = 0;
+
+        if (typeof direction === 'string') {
+            if (direction === '+1' || direction === DIRECTION.FORWARD) {
+                index = carousel.currentIndex + 1;
+            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
+                index = carousel.currentIndex - 1;
+            } else {
+                index = parseInt(direction, 10) || 0;
+            }
+        } else if (typeof direction === 'number') {
+            index = direction;
+        }
+
+        // if < 0, wrap to end, if > itemCount -1, wrap to beginning
+        index = index < 0 ? carousel.itemCount - 1 : index;
+        index = index > carousel.itemCount - 1 ? 0 : index;
+        return index;
     }
 
     function _setAriaVisibility(items, currentIndex) {
@@ -91,7 +118,17 @@
     }
 
 
+    /**
+     * Class responsible for carousel functionality.
+     */
     class FlexCarousel {
+        /**
+         * Creates a FlexCarousel.
+         * @param {Element} el - The Element to use as a carousel.
+         * @param {Object} config - Configuration for the carousel.
+         * @param {string} config.direction - The initial direction of the carousel's slide.
+         * @param {number} config.speed - The default speed of the carousel's slide in ms. 
+         */
         constructor(el, config) {
             if (!el) {
                 throw 'FlexCarousel needs an Element!';
@@ -127,13 +164,20 @@
             this.play();
         }
 
+        /**
+         * Moves the carousel to the given position.
+         * @param {(number|string)} direction - The zero based index of the target item, or the strings `'forward'` (or `'+1'`), or `'backward'` (or `'-1'`).
+         */
         slide(direction) {
-            this.currentIndex = this.getNextItem(direction);
+            this.currentIndex = _getNextItem(this, direction);
             let position = (this.currentIndex / this.itemCount) * 100;
             this.el.style.transform = `translate(-${position}%)`;
             _setAriaVisibility(this.items, this.currentIndex);
         }
 
+        /**
+         * Starts automatically moving the carousel.
+         */
         play() {
             let currentItem = this.items.item(this.currentIndex);
             let settings = Object.assign({}, this.settings, _getItemElementData(currentItem));
@@ -144,41 +188,40 @@
             }, settings.speed);
         }
 
+        /**
+         * Stops automatically moving the carousel.
+         */
         pause() {
             w.clearTimeout(this._timeout);
         }
 
-        getNextItem(direction) {
-            let index = 0;
-
-            if (typeof direction === 'string') {
-                if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                    index = this.currentIndex + 1;
-                } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                    index = this.currentIndex - 1;
-                } else {
-                    index = parseInt(direction, 10);
-                }
-            } else if (typeof direction === 'number') {
-                index = direction;
-            }
-
-            // if < 0, wrap to end, if > itemCount -1, wrap to beginning
-            index = index < 0 ? this.itemCount - 1 : index;
-            index = index > this.itemCount - 1 ? 0 : index;
-            return index;
-        }
-
+        /**
+         * Gets the global default settings for carousels.
+         * @static
+         */
         static get defaults() {
             return _defaults;
         }
 
+        /**
+         * Sets the global default settings for carousels.
+         * @static
+         * @param {Object} defaults - The default global options.
+         */
         static set defaults(defaults) {
             _defaults = defaults;
         }
     }
 
+
+    /**
+     * Class responsible for carousel control functionality.
+     */
     class FlexCarouselControl {
+        /**
+         * Creates a FlexCarouselControl.
+         * @param {Element} el - The Element to use as a carousel control. 
+         */
         constructor(el) {
             if (!el) throw 'FlexCarouselControl needs an Element!';
             this.el = el;
@@ -190,6 +233,9 @@
             this.el.addEventListener('click', () => this.onclick());
         }
 
+        /**
+         * The handler called when the control is clicked.
+         */
         onclick() {
             let targets = _getRegistrySet(this.targetName);
 
@@ -204,10 +250,10 @@
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
 
-    document.addEventListener('fc:init', function () {
-        document.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
-        document.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
+    d.addEventListener('fc:init', function () {
+        d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
+        d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
     });
 
     document.dispatchEvent(new CustomEvent('fc:init'));
-})(window);
+})(window, document);
