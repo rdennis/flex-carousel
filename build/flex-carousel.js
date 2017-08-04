@@ -19,10 +19,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var _idSeed = 0;
 
     var _defaults = {
-        initialIndex: 0,
-        autoPlay: true,
-        direction: DIRECTION.FORWARD,
-        speed: 5000
+        FlexCarousel: {
+            initialIndex: 0,
+            autoPlay: true,
+            direction: DIRECTION.FORWARD,
+            speed: 5000
+        },
+        FlexCarouselIndicator: {
+            activeClass: ''
+        }
     };
 
     function _tryParseNumber(value) {
@@ -152,7 +157,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 throw 'FlexCarousel needs an Element!';
             }
 
-            this.settings = Object.assign({}, _defaults, config);
+            this.settings = Object.assign({}, FlexCarousel.defaults, config);
 
             this.el = el;
             this.id = _getElementId(this.el);
@@ -222,6 +227,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 var position = this.currentIndex * 100;
                 this.el.style.left = '-' + position + '%';
                 _setAriaVisibility(this.items, this.currentIndex);
+
+                // trigger slid event
+                this.el.dispatchEvent(new CustomEvent('fc:slid', { detail: this.currentIndex }));
             }
 
             /**
@@ -275,7 +283,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }], [{
             key: 'defaults',
             get: function get() {
-                return _defaults;
+                return _defaults.FlexCarousel;
             }
 
             /**
@@ -285,7 +293,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
              */
             ,
             set: function set(defaults) {
-                _defaults = defaults;
+                _defaults.FlexCarousel = defaults;
             }
         }]);
 
@@ -350,8 +358,71 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return FlexCarouselControl;
     }();
 
+    var FlexCarouselIndicator = function () {
+        function FlexCarouselIndicator(el, config) {
+            var _this5 = this;
+
+            _classCallCheck(this, FlexCarouselIndicator);
+
+            if (!el) throw 'FlexCarouselIndicator needs an Element!';
+            this.el = el;
+
+            this.settings = Object.assign({}, FlexCarouselIndicator.defaults, config);
+
+            var _getElementData$split3 = _getElementData(el, 'flex-carousel-indicator').split(':');
+
+            var _getElementData$split4 = _slicedToArray(_getElementData$split3, 3);
+
+            this.targetName = _getElementData$split4[0];
+            this.index = _getElementData$split4[1];
+            this.activeClass = _getElementData$split4[2];
+
+            this.index = parseInt(this.index);
+            this.activeClass = this.activeClass || this.settings.activeClass;
+
+            var targets = _getRegistrySet(this.targetName);
+
+            targets.forEach(function (target) {
+                if (target && target.el) {
+                    target.el.addEventListener('fc:slid', function (e) {
+                        return _this5.onslid(e);
+                    });
+                }
+            });
+        }
+
+        _createClass(FlexCarouselIndicator, [{
+            key: 'onslid',
+            value: function onslid(e) {
+                var currentIndex = parseInt(e.detail),
+                    active = currentIndex === this.index;
+
+                if (active) {
+                    this.el.setAttribute('data-flex-carousel-indicator-active', '');
+                } else {
+                    this.el.removeAttribute('data-flex-carousel-indicator-active');
+                }
+
+                if (this.activeClass) {
+                    this.el.classList.toggle(this.activeClass, active);
+                }
+            }
+        }], [{
+            key: 'defaults',
+            get: function get() {
+                return _defaults.FlexCarouselIndicator;
+            },
+            set: function set(defaults) {
+                _defaults.FlexCarouselIndicator = defaults;
+            }
+        }]);
+
+        return FlexCarouselIndicator;
+    }();
+
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
+    w.FlexCarouselIndicator = FlexCarouselIndicator;
 
     d.addEventListener('fc:init', function () {
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
@@ -359,6 +430,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
         d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach(function (el) {
             return new FlexCarouselControl(el);
+        });
+        d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach(function (el) {
+            return new FlexCarouselIndicator(el);
         });
     });
 

@@ -12,10 +12,15 @@
     let _idSeed = 0;
 
     let _defaults = {
-        initialIndex: 0,
-        autoPlay: true,
-        direction: DIRECTION.FORWARD,
-        speed: 5000
+        FlexCarousel: {
+            initialIndex: 0,
+            autoPlay: true,
+            direction: DIRECTION.FORWARD,
+            speed: 5000
+        },
+        FlexCarouselIndicator: {
+            activeClass: ''
+        }
     };
 
     function _tryParseNumber(value) {
@@ -136,7 +141,7 @@
                 throw 'FlexCarousel needs an Element!';
             }
 
-            this.settings = Object.assign({}, _defaults, config);
+            this.settings = Object.assign({}, FlexCarousel.defaults, config);
 
             this.el = el;
             this.id = _getElementId(this.el);
@@ -200,6 +205,9 @@
             let position = this.currentIndex * 100;
             this.el.style.left = `-${position}%`;
             _setAriaVisibility(this.items, this.currentIndex);
+
+            // trigger slid event
+            this.el.dispatchEvent(new CustomEvent('fc:slid', { detail: this.currentIndex }));
         }
 
         /**
@@ -239,7 +247,7 @@
          * @static
          */
         static get defaults() {
-            return _defaults;
+            return _defaults.FlexCarousel;
         }
 
         /**
@@ -248,7 +256,7 @@
          * @param {Object} defaults - The default global options.
          */
         static set defaults(defaults) {
-            _defaults = defaults;
+            _defaults.FlexCarousel = defaults;
         }
     }
 
@@ -286,12 +294,58 @@
         }
     }
 
+    class FlexCarouselIndicator {
+        constructor(el, config) {
+            if (!el) throw 'FlexCarouselIndicator needs an Element!';
+            this.el = el;
+
+            this.settings = Object.assign({}, FlexCarouselIndicator.defaults, config);
+
+            [this.targetName, this.index, this.activeClass] = _getElementData(el, 'flex-carousel-indicator').split(':');
+            this.index = parseInt(this.index);
+            this.activeClass = this.activeClass || this.settings.activeClass;
+
+            let targets = _getRegistrySet(this.targetName);
+
+            targets.forEach((target) => {
+                if (target && target.el) {
+                    target.el.addEventListener('fc:slid', (e) => this.onslid(e));
+                }
+            });
+        }
+
+        onslid(e) {
+            let currentIndex = parseInt(e.detail),
+                active = currentIndex === this.index;
+
+            if (active) {
+                this.el.setAttribute('data-flex-carousel-indicator-active', '');
+            } else {
+                this.el.removeAttribute('data-flex-carousel-indicator-active');
+            }
+
+            if (this.activeClass) {
+                this.el.classList.toggle(this.activeClass, active);
+            }
+        }
+
+        static get defaults() {
+            return _defaults.FlexCarouselIndicator;
+        }
+
+        static set defaults(defaults) {
+            _defaults.FlexCarouselIndicator = defaults;
+        }
+    }
+
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
+    w.FlexCarouselIndicator = FlexCarouselIndicator;
 
     d.addEventListener('fc:init', function () {
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
         d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
+        d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach((el) => new FlexCarouselIndicator(el));
     });
 
     document.dispatchEvent(new CustomEvent('fc:init'));

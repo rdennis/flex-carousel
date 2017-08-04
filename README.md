@@ -37,6 +37,12 @@ Available properties:
 
 -   speed: the time (in ms) the item will be visible
 
+## `data-flex-carousel-indicator` _optional_
+
+Used to mark an element as an active indicator for a given item in a given carousel group. When the given item is active, this element will have the `data-flex-carousel-indicator-active` attribute added and (if supplied) will have the `active-class` added to the `classList`.
+
+Syntax: `data-flex-carousel-indicator="<carousel-group-name>:<item-index>[:<active-class>]"`
+
 ## JS Initialization
 
 By default, all tags marked with `[data-flex-carousel]` or `[data-flex-carousel-control]` are initialized when flex-carousel loads. This can be prevented by stopping the `fc:init` event on the `document`. You can then create the components yourself.
