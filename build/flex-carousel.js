@@ -19,6 +19,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var _idSeed = 0;
 
     var _defaults = {
+        initialIndex: 0,
+        autoPlay: true,
         direction: DIRECTION.FORWARD,
         speed: 5000
     };
@@ -81,7 +83,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return id;
     }
 
-    function _getNextItem(carousel, direction) {
+    function _getNextIndex(carousel, direction) {
         var index = 0;
 
         if (typeof direction === 'string') {
@@ -155,15 +157,34 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             this.el = el;
             this.id = _getElementId(this.el);
             this.name = _getElementData(el, 'flex-carousel').split(':')[0];
-            this.currentIndex = 0;
+            this.currentIndex = this.settings.initialIndex;
 
             this.items = this.el.children;
             this.itemCount = this.items.length;
 
             // todo: support vertical orientation?
-            this.el.parentElement.style.overflowX = 'hidden';
+            var parentStyle = window.getComputedStyle(this.el.parentElement);
+            var elStyle = window.getComputedStyle(this.el);
+
+            // require overflow-x: hidden
+            if (parentStyle.overflowX !== 'hidden') {
+                this.el.parentElement.style.overflowX = 'hidden';
+            }
+
+            // require el to be positioned (don't care how)
+            if (elStyle.position === 'static') {
+                el.style.position = 'relative';
+            }
+
+            // require el to be a flexbox
+            if (!elStyle.display.includes('flex')) {
+                el.style.display = 'flex';
+            }
+
+            // el width is based on number of items
             this.el.style.width = this.items.length * 100 + '%';
 
+            // each item must have flex: 1 0 auto
             for (var i = 0, l = this.itemCount; i < l; i++) {
                 var item = this.items.item(i);
                 item.style.flex = '1 0 auto';
@@ -178,8 +199,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 });
             });
 
-            _setAriaVisibility(this.items, this.currentIndex);
-            this.play();
+            // slide to the initial item
+            this.slide(this.currentIndex);
+
+            // start the carousel
+            if (this.settings.autoPlay) {
+                this.play();
+            }
         }
 
         /**
@@ -191,9 +217,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         _createClass(FlexCarousel, [{
             key: 'slide',
             value: function slide(direction) {
-                this.currentIndex = _getNextItem(this, direction);
-                var position = this.currentIndex / this.itemCount * 100;
-                this.el.style.transform = 'translate(-' + position + '%)';
+                this.currentIndex = _getNextIndex(this, direction);
+                // left % is relative to the containing block
+                var position = this.currentIndex * 100;
+                this.el.style.left = '-' + position + '%';
                 _setAriaVisibility(this.items, this.currentIndex);
             }
 
