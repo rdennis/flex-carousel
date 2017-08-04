@@ -143,3 +143,18 @@ The handler called when the control is clicked.
     <button type="button" data-flex-carousel-control="carousel:slide:pause">Pause</button>
 </div>
 ```
+
+
+# Development
+
+To build the project run:
+
+    npm run build
+
+To watch for changes run:
+
+    npm run watch
+
+To start serving the examples run:
+    
+    npm run web
