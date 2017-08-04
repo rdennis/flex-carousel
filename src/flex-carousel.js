@@ -177,7 +177,7 @@
             _addRegistryValue(this.name, this);
 
             // listen for events
-            ['slide', 'play', 'pause'].forEach((event) => {
+            ['slide', 'play', 'pause', 'toggle'].forEach((event) => {
                 this.el.addEventListener(`fc:${event}`, (e) => this[event](e.detail));
             });
 
@@ -220,6 +220,18 @@
          */
         pause() {
             w.clearTimeout(this._timeout);
+            this._timeout = null;
+        }
+
+        /**
+         * Toggles the play state of the carousel.
+         */
+        toggle() {
+            if (this._timeout) {
+                this.pause();
+            } else {
+                this.play();
+            }
         }
 
         /**

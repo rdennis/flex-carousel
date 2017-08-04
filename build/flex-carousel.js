@@ -193,7 +193,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             _addRegistryValue(this.name, this);
 
             // listen for events
-            ['slide', 'play', 'pause'].forEach(function (event) {
+            ['slide', 'play', 'pause', 'toggle'].forEach(function (event) {
                 _this.el.addEventListener('fc:' + event, function (e) {
                     return _this[event](e.detail);
                 });
@@ -250,6 +250,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             key: 'pause',
             value: function pause() {
                 w.clearTimeout(this._timeout);
+                this._timeout = null;
+            }
+
+            /**
+             * Toggles the play state of the carousel.
+             */
+
+        }, {
+            key: 'toggle',
+            value: function toggle() {
+                if (this._timeout) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
             }
 
             /**
