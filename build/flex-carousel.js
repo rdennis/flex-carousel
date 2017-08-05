@@ -208,6 +208,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         _createClass(FlexCarousel, [{
             key: 'slide',
             value: function slide(direction) {
+                var _this2 = this;
+
                 this.currentIndex = _getNextIndex(this, direction);
 
                 var position = this.currentIndex * 100;
@@ -215,18 +217,29 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 _setAriaVisibility(this.items, this.currentIndex);
 
                 this.el.dispatchEvent(new CustomEvent('fc:slid', { detail: this.currentIndex }));
+
+                if (this._timeout) {
+                    w.clearTimeout(this._timeout);
+
+                    w.setTimeout(function () {
+                        return _this2.play();
+                    }, 0);
+                }
             }
         }, {
             key: 'play',
             value: function play() {
-                var _this2 = this;
+                var _this3 = this;
+
+                w.clearTimeout(this._timeout);
+                this._timeout = null;
 
                 var currentItem = this.items.item(this.currentIndex);
                 var settings = Object.assign({}, this.settings, _getItemElementData(currentItem));
 
                 this._timeout = w.setTimeout(function () {
-                    _this2.slide(_this2.settings.direction);
-                    _this2.play();
+                    _this3.slide(_this3.settings.direction);
+                    _this3.play();
                 }, settings.speed);
             }
         }, {
@@ -259,7 +272,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     var FlexCarouselControl = function () {
         function FlexCarouselControl(el) {
-            var _this3 = this;
+            var _this4 = this;
 
             _classCallCheck(this, FlexCarouselControl);
 
@@ -277,20 +290,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             _setAriaControls(this, _getRegistrySet(this.targetName));
             this.el.addEventListener('click', function () {
-                return _this3.onclick();
+                return _this4.onclick();
             });
         }
 
         _createClass(FlexCarouselControl, [{
             key: 'onclick',
             value: function onclick() {
-                var _this4 = this;
+                var _this5 = this;
 
                 var targets = _getRegistrySet(this.targetName);
 
                 targets.forEach(function (target) {
                     if (target && target.el) {
-                        target.el.dispatchEvent(new CustomEvent('fc:' + _this4.event, { detail: _this4.param }));
+                        target.el.dispatchEvent(new CustomEvent('fc:' + _this5.event, { detail: _this5.param }));
                     }
                 });
             }
@@ -301,7 +314,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     var FlexCarouselIndicator = function () {
         function FlexCarouselIndicator(el, config) {
-            var _this5 = this;
+            var _this6 = this;
 
             _classCallCheck(this, FlexCarouselIndicator);
 
@@ -326,9 +339,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             targets.forEach(function (target) {
                 if (target && target.el) {
                     target.el.addEventListener('fc:slid', function (e) {
-                        return _this5.onslid(e);
+                        return _this6.onslid(e);
                     });
-                    _setIndicatorActive(_this5, target.currentIndex);
+                    _setIndicatorActive(_this6, target.currentIndex);
                 }
             });
         }

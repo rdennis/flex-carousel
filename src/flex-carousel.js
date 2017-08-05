@@ -254,12 +254,22 @@
 
             // trigger slid event
             this.el.dispatchEvent(new CustomEvent('fc:slid', { detail: this.currentIndex }));
+
+            // if we're waiting for a timeout, clear it and start over
+            if (this._timeout) {
+                w.clearTimeout(this._timeout);
+                // let the transition happen, then start playing again
+                w.setTimeout(() => this.play(), 0);
+            }
         }
 
         /**
          * Starts automatically moving the carousel.
          */
         play() {
+            w.clearTimeout(this._timeout);
+            this._timeout = null;
+
             let currentItem = this.items.item(this.currentIndex);
             let settings = Object.assign({}, this.settings, _getItemElementData(currentItem));
 
