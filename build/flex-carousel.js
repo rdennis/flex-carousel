@@ -368,7 +368,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     w.FlexCarouselControl = FlexCarouselControl;
     w.FlexCarouselIndicator = FlexCarouselIndicator;
 
-    d.addEventListener('fc:init', function () {
+    d.addEventListener('fc:init', function oninit(e) {
+        e.target.removeEventListener(e.type, oninit);
+
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
             return new FlexCarousel(el);
         });

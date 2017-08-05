@@ -412,7 +412,10 @@
     w.FlexCarouselIndicator = FlexCarouselIndicator;
 
     // attach default initialization handler
-    d.addEventListener('fc:init', function () {
+    d.addEventListener('fc:init', function oninit(e) {
+        // remove this listener
+        e.target.removeEventListener(e.type, oninit);
+
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
         d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
         d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach((el) => new FlexCarouselIndicator(el));
