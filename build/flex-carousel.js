@@ -7,30 +7,11 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 (function (w, d) {
-    /**
-     * Enum for carousel direction.
-     * @readonly
-     * @enum {string}
-     */
     var DIRECTION = {
-        /** The forward direction: `forward`. */
         FORWARD: 'forward',
-        /** The reverse direction: `reverse`. */
+
         REVERSE: 'reverse'
     };
-
-    /**
-     * @typedef {Object} FlexCarouselConfig
-     * @prop {number} initialIndex - The initial item index (default: `0`).
-     * @prop {boolean} autoPlay - Whether to start playing the carousel after initialization (default: `true`).
-     * @prop {DIRECTION} direction - The direction the carousel slides (default: `DIRECTION.FORWARD`).
-     * @prop {number} speed - The speed (in ms) of the carousel (default: `5000`).
-     */
-
-    /**
-     * @typedef {Object} FlexCarouselIndicatorConfig
-     * @prop {string} activeClass - The class to be applied to indicators when their item is active (default: '').
-     */
 
     var _datasetReplacer = /-(\w)?/g;
 
@@ -49,39 +30,29 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
     };
 
-    // converts a value to a number, or the value itself, if it is not convertable
     function _tryParseNumber(value) {
-        // convert to number if value is a number, or string containing a valid numberic representation
-        // filter out null, '', and  '    '
-        // note: isNaN(<null || ''>) return false, so we catch them with !value first
-        // note: isNaN('   ') returns false, so we catch it with !trim(value)
         return !value || !String.prototype.trim.call(value) || isNaN(value) ? value : +value;
     }
 
-    // gets a Set from the registry for a given key
     function _getRegistrySet(name) {
         return _registry[name] || new Set();
     }
 
-    // adds a value to the Set for a given key in the registry
     function _addRegistryValue(name, carousel) {
         (_registry[name] = _registry[name] || new Set()).add(carousel);
     }
 
-    // convert an attribute name to a dataset name
     function _attributeToDatasetName(attribute) {
         return attribute.replace(_datasetReplacer, function (match, letter) {
             return letter.toUpperCase();
         });
     }
 
-    // returns the string for a given attribute, preferring dataset over attribute name
     function _getElementData(el, attribute) {
         var datasetName = _attributeToDatasetName(attribute);
         return el && (el.dataset[datasetName] || el.getAttribute(attribute)) || '';
     }
 
-    // returns the object that represents the key: value pairs from the flex-carousel-item dataset/attribute
     function _getItemElementData(el) {
         var data = _getElementData(el, 'flex-carousel-item') || "";
         var pairs = data.split(';');
@@ -102,7 +73,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }, {});
     }
 
-    // returns a string that is the id of an element; sets the id if none exists
     function _getElementId(el) {
         var id = el.getAttribute('id');
 
@@ -114,7 +84,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return id;
     }
 
-    // returns a number that is the next carousel in the rotation based on the given direction
     function _getNextIndex(carousel, direction) {
         var index = 0;
 
@@ -130,13 +99,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             index = direction;
         }
 
-        // if < 0, wrap to end, if > itemCount -1, wrap to beginning
         index = index < 0 ? carousel.itemCount - 1 : index;
         index = index > carousel.itemCount - 1 ? 0 : index;
         return index;
     }
 
-    // sets the aria-hidden attribute value based on the active item
     function _setAriaVisibility(items, currentIndex) {
         if (items && items.length > 0) {
             for (var i = 0, l = items.length; i < l; i++) {
@@ -146,11 +113,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
     }
 
-    // sets the aria-controls attribute of a FlexCarouselControl
     function _setAriaControls(control, targets) {
         var ariaControls = void 0;
 
-        // make sure we have a target, element, and no element[aria-controls] value
         if (control && targets && targets.size && control.el && !(ariaControls = control.el.getAttribute('aria-controls'))) {
             ariaControls = '';
 
@@ -165,16 +130,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
     }
 
-    /**
-     * Class responsible for carousel functionality.
-     */
-
     var FlexCarousel = function () {
-        /**
-         * Creates a FlexCarousel.
-         * @param {Element} el - The Element to use as a carousel.
-         * @param {?FlexCarouselConfig} config - Configuration for the carousel.
-         */
         function FlexCarousel(el, config) {
             var _this = this;
 
@@ -194,29 +150,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             this.items = this.el.children;
             this.itemCount = this.items.length;
 
-            // todo: support vertical orientation?
             var parentStyle = window.getComputedStyle(this.el.parentElement);
             var elStyle = window.getComputedStyle(this.el);
 
-            // require overflow-x: hidden
             if (parentStyle.overflowX !== 'hidden') {
                 this.el.parentElement.style.overflowX = 'hidden';
             }
 
-            // require el to be positioned (don't care how)
             if (elStyle.position === 'static') {
                 el.style.position = 'relative';
             }
 
-            // require el to be a flexbox
             if (!elStyle.display.includes('flex')) {
                 el.style.display = 'flex';
             }
 
-            // el width is based on number of items
             this.el.style.width = this.items.length * 100 + '%';
 
-            // each item must have flex: 1 0 auto
             for (var i = 0, l = this.itemCount; i < l; i++) {
                 var item = this.items.item(i);
                 item.style.flex = '1 0 auto';
@@ -224,45 +174,30 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             _addRegistryValue(this.name, this);
 
-            // listen for events
             ['slide', 'play', 'pause', 'toggle'].forEach(function (event) {
                 _this.el.addEventListener('fc:' + event, function (e) {
                     return _this[event](e.detail);
                 });
             });
 
-            // slide to the initial item
             this.slide(this.currentIndex);
 
-            // start the carousel
             if (this.settings.autoPlay) {
                 this.play();
             }
         }
 
-        /**
-         * Moves the carousel to the given position.
-         * @param {(string|number)} direction - The zero based index of the target item, or the strings `'forward'` (or `'+1'`), or `'backward'` (or `'-1'`).
-         */
-
-
         _createClass(FlexCarousel, [{
             key: 'slide',
             value: function slide(direction) {
                 this.currentIndex = _getNextIndex(this, direction);
-                // left % is relative to the containing block
+
                 var position = this.currentIndex * 100;
                 this.el.style.left = '-' + position + '%';
                 _setAriaVisibility(this.items, this.currentIndex);
 
-                // trigger slid event
                 this.el.dispatchEvent(new CustomEvent('fc:slid', { detail: this.currentIndex }));
             }
-
-            /**
-             * Starts automatically moving the carousel.
-             */
-
         }, {
             key: 'play',
             value: function play() {
@@ -276,22 +211,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     _this2.play();
                 }, settings.speed);
             }
-
-            /**
-             * Stops automatically moving the carousel.
-             */
-
         }, {
             key: 'pause',
             value: function pause() {
                 w.clearTimeout(this._timeout);
                 this._timeout = null;
             }
-
-            /**
-             * Toggles the play state of the carousel.
-             */
-
         }, {
             key: 'toggle',
             value: function toggle() {
@@ -301,24 +226,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     this.play();
                 }
             }
-
-            /**
-             * Gets the global default settings for carousels.
-             * @static
-             */
-
         }], [{
             key: 'defaults',
             get: function get() {
                 return _defaults.FlexCarousel;
-            }
-
-            /**
-             * Sets the global default settings for carousels.
-             * @static
-             * @param {FlexCarouselConfig} defaults - The default global options.
-             */
-            ,
+            },
             set: function set(defaults) {
                 _defaults.FlexCarousel = defaults;
             }
@@ -327,16 +239,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return FlexCarousel;
     }();
 
-    /**
-     * Class responsible for carousel control functionality.
-     */
-
-
     var FlexCarouselControl = function () {
-        /**
-         * Creates a FlexCarouselControl.
-         * @param {Element} el - The Element to use as a carousel control. 
-         */
         function FlexCarouselControl(el) {
             var _this3 = this;
 
@@ -344,8 +247,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             if (!el) throw 'FlexCarouselControl needs an Element!';
             this.el = el;
-
-            // get data from format "<targetName>:<event>:<param>"
 
             var _getElementData$split = _getElementData(el, 'flex-carousel-control').split(':');
 
@@ -361,11 +262,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 return _this3.onclick();
             });
         }
-
-        /**
-         * The handler called when the control is clicked.
-         */
-
 
         _createClass(FlexCarouselControl, [{
             key: 'onclick',
@@ -385,17 +281,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return FlexCarouselControl;
     }();
 
-    /**
-     * Class responsible for carousel indicator functionality.
-     */
-
-
     var FlexCarouselIndicator = function () {
-        /**
-         * Creates a FlexCarouselIndicator.
-         * @param {Element} el - The Element to use as a carousel indicator.
-         * @param {?FlexCarouselIndicatorConfig} config - Configuration for the carousel indicator.
-         */
         function FlexCarouselIndicator(el, config) {
             var _this5 = this;
 
@@ -428,13 +314,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             });
         }
 
-        /**
-         * 
-         * @param {CustomEvent} e - The CustomEvent representing `fc:slid`.
-         * @param {number} e.detail - The index of the current item.
-         */
-
-
         _createClass(FlexCarouselIndicator, [{
             key: 'onslid',
             value: function onslid(e) {
@@ -451,24 +330,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     this.el.classList.toggle(this.activeClass, active);
                 }
             }
-
-            /**
-             * Gets the global default settings for carousel indicators.
-             * @static
-             */
-
         }], [{
             key: 'defaults',
             get: function get() {
                 return _defaults.FlexCarouselIndicator;
-            }
-
-            /**
-             * Sets the global default settings for carousel indicators.
-             * @static
-             * @param {FlexCarouselIndicatorConfig} defaults - The default global options.
-             */
-            ,
+            },
             set: function set(defaults) {
                 _defaults.FlexCarouselIndicator = defaults;
             }
@@ -477,14 +343,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return FlexCarouselIndicator;
     }();
 
-    // expose classes on window
-
-
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
     w.FlexCarouselIndicator = FlexCarouselIndicator;
 
-    // attach default initialization handler
     d.addEventListener('fc:init', function () {
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
             return new FlexCarousel(el);
@@ -497,7 +359,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
     });
 
-    // dispatch initialization event
     document.dispatchEvent(new CustomEvent('fc:init'));
 })(window, document);
 
