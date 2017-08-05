@@ -27,7 +27,7 @@
 
     const _datasetReplacer = /-(\w)?/g;
 
-    const _registry = {};
+    const _registry = new Map();
 
     let _idSeed = 0;
     let _defaults = {
@@ -53,12 +53,16 @@
 
     // gets a Set from the registry for a given key
     function _getRegistrySet(name) {
-        return _registry[name] || new Set();
+        return _registry.get(name) || new Set();
     }
 
     // adds a value to the Set for a given key in the registry
     function _addRegistryValue(name, carousel) {
-        (_registry[name] = (_registry[name] || new Set())).add(carousel);
+        if (!_registry.has(name)) {
+            _registry.set(name, new Set());
+        }
+
+        _getRegistrySet(name).add(carousel);
     }
 
     // convert an attribute name to a dataset name

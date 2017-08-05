@@ -15,7 +15,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     var _datasetReplacer = /-(\w)?/g;
 
-    var _registry = {};
+    var _registry = new Map();
 
     var _idSeed = 0;
     var _defaults = {
@@ -35,11 +35,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
 
     function _getRegistrySet(name) {
-        return _registry[name] || new Set();
+        return _registry.get(name) || new Set();
     }
 
     function _addRegistryValue(name, carousel) {
-        (_registry[name] = _registry[name] || new Set()).add(carousel);
+        if (!_registry.has(name)) {
+            _registry.set(name, new Set());
+        }
+
+        _getRegistrySet(name).add(carousel);
     }
 
     function _attributeToDatasetName(attribute) {
