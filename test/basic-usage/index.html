@@ -42,8 +42,17 @@
             background: blue url(http://placehold.it/1000x1000/0000ff) center/cover;
         }
 
+        .indicator {
+            transition: color 0.3s;
+        }
+
+        .indicator[data-flex-carousel-indicator-active] {
+            color: green;
+        }
+
         .indicator[data-flex-carousel-indicator-active]::after {
-            content: ' - active';
+            content: ' (active)';
+            font-size: 0.8em;
         }
     </style>
 </head>

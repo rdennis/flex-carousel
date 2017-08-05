@@ -157,6 +157,21 @@
         }
     }
 
+    // sets the active state of an indicator based on the currentIndex
+    function _setIndicatorActive(indicator, currentIndex) {
+        let active = currentIndex === indicator.index;
+
+        if (active) {
+            indicator.el.setAttribute('data-flex-carousel-indicator-active', '');
+        } else {
+            indicator.el.removeAttribute('data-flex-carousel-indicator-active');
+        }
+
+        if (indicator.activeClass) {
+            indicator.el.classList.toggle(indicator.activeClass, active);
+        }
+    }
+
 
     /**
      * Class responsible for carousel functionality.
@@ -349,6 +364,7 @@
             targets.forEach((target) => {
                 if (target && target.el) {
                     target.el.addEventListener('fc:slid', (e) => this.onslid(e));
+                    _setIndicatorActive(this, target.currentIndex);
                 }
             });
         }
@@ -359,18 +375,7 @@
          * @param {number} e.detail - The index of the current item.
          */
         onslid(e) {
-            let currentIndex = parseInt(e.detail),
-                active = currentIndex === this.index;
-
-            if (active) {
-                this.el.setAttribute('data-flex-carousel-indicator-active', '');
-            } else {
-                this.el.removeAttribute('data-flex-carousel-indicator-active');
-            }
-
-            if (this.activeClass) {
-                this.el.classList.toggle(this.activeClass, active);
-            }
+            _setIndicatorActive(this, parseInt(e.detail));
         }
 
         /**
@@ -404,5 +409,5 @@
     });
 
     // dispatch initialization event
-    document.dispatchEvent(new CustomEvent('fc:init'));
+    d.dispatchEvent(new CustomEvent('fc:init'));
 })(window, document);

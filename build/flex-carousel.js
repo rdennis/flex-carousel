@@ -134,6 +134,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
     }
 
+    function _setIndicatorActive(indicator, currentIndex) {
+        var active = currentIndex === indicator.index;
+
+        if (active) {
+            indicator.el.setAttribute('data-flex-carousel-indicator-active', '');
+        } else {
+            indicator.el.removeAttribute('data-flex-carousel-indicator-active');
+        }
+
+        if (indicator.activeClass) {
+            indicator.el.classList.toggle(indicator.activeClass, active);
+        }
+    }
+
     var FlexCarousel = function () {
         function FlexCarousel(el, config) {
             var _this = this;
@@ -314,6 +328,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     target.el.addEventListener('fc:slid', function (e) {
                         return _this5.onslid(e);
                     });
+                    _setIndicatorActive(_this5, target.currentIndex);
                 }
             });
         }
@@ -321,18 +336,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         _createClass(FlexCarouselIndicator, [{
             key: 'onslid',
             value: function onslid(e) {
-                var currentIndex = parseInt(e.detail),
-                    active = currentIndex === this.index;
-
-                if (active) {
-                    this.el.setAttribute('data-flex-carousel-indicator-active', '');
-                } else {
-                    this.el.removeAttribute('data-flex-carousel-indicator-active');
-                }
-
-                if (this.activeClass) {
-                    this.el.classList.toggle(this.activeClass, active);
-                }
+                _setIndicatorActive(this, parseInt(e.detail));
             }
         }], [{
             key: 'defaults',
@@ -363,7 +367,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
     });
 
-    document.dispatchEvent(new CustomEvent('fc:init'));
+    d.dispatchEvent(new CustomEvent('fc:init'));
 })(window, document);
 
 //# sourceMappingURL=flex-carousel.js.map
