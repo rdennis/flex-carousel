@@ -354,7 +354,7 @@
         }
 
         /**
-         * 
+         * The handler called when the carousel dispatches the `fc:slid` event.
          * @param {CustomEvent} e - The CustomEvent representing `fc:slid`.
          * @param {number} e.detail - The index of the current item.
          */

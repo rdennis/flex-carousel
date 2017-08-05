@@ -217,6 +217,8 @@ Creates a FlexCarouselIndicator.
 
 ### onslid
 
+The handler called when the carousel dispatches the `fc:slid` event.
+
 **Parameters**
 
 -   `e` **[CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent)** The CustomEvent representing `fc:slid`.
