@@ -66,13 +66,13 @@
                     <p>This is item 1.</p>
                 </div>
             </div>
-            <div class="carousel-item item-2">
+            <div class="carousel-item item-2" data-flex-carousel-item="speed: 2000">
                 <div class="carousel-caption">
                     <h2>Item 2</h2>
                     <p>This is item 2.</p>
                 </div>
             </div>
-            <div class="carousel-item item-3">
+            <div class="carousel-item item-3" data-flex-carousel-item="speed: 3000">
                 <div class="carousel-caption">
                     <h2>Item 3</h2>
                     <p>This is item 3.</p>
@@ -81,8 +81,8 @@
         </div>
         <ul class="carousel-control indicators">
             <li class="indicator" data-flex-carousel-control="carousel:slide:0" data-flex-carousel-indicator="carousel:0">Item 1</li>
-            <li class="indicator" data-flex-carousel-control="carousel:slide:1" data-flex-carousel-indicator="carousel:1">Item 2</li>
-            <li class="indicator" data-flex-carousel-control="carousel:slide:2" data-flex-carousel-indicator="carousel:2">Item 3</li>
+            <li class="indicator" data-flex-carousel-control="carousel:slide:1" data-flex-carousel-indicator="carousel:1:active-1">Item 2</li>
+            <li class="indicator" data-flex-carousel-control="carousel:slide:2" data-flex-carousel-indicator="carousel:2:active-2">Item 3</li>
         </ul>
         <button type="button" class="carousel-control prev" data-flex-carousel-control="carousel:slide:-1">Prev</button>
         <button type="button" class="carousel-control next" data-flex-carousel-control="carousel:slide:+1">Next</button>
@@ -90,6 +90,21 @@
         <button type="button" class="carousel-control pause" data-flex-carousel-control="carousel:pause">Pause</button>
         <button type="button" class="carousel-control toggle" data-flex-carousel-control="carousel:toggle">Toggle</button>
     </div>
+    <script>
+        document.addEventListener('fc:init', (e) => {
+            console.log('fc:init');
+            FlexCarousel.defaults.autoPlay = false;
+            FlexCarouselIndicator.defaults.activeClass = 'indicator--active';
+        });
+
+        let carousel = document.querySelector('[data-flex-carousel]');
+
+        ['slide', 'play', 'pause', 'toggle'].forEach((eventName) => {
+            carousel.addEventListener(`fc:${eventName}`, function (e) {
+                console.log(`${e.type}:${e.detail}`);
+            });
+        });
+    </script>
     <script src="../../build/flex-carousel.js"></script>
 </body>
 
