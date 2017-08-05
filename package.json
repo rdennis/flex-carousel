@@ -4,9 +4,6 @@
   "version": "0.0.1",
   "description": "A carousel using flexbox.",
   "main": "build/flex-carousel.js",
-  "directories": {
-    "test": "test"
-  },
   "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -26,7 +23,6 @@
     "watch": "npm run build:min -- --watch & npm run build -- --watch",
     "documentation": "documentation readme src/flex-carousel.js --section=API",
     "web": "npm run -s build && http-server ./",
-    "test": "npm run -s build && http-server ./",
     "dev": "npm run -s watch & npm run -s web"
   },
   "repository": {
