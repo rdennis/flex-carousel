@@ -1,16 +1,35 @@
 (function (w, d) {
+    /**
+     * Enum for carousel direction.
+     * @readonly
+     * @enum {string}
+     */
     const DIRECTION = {
+        /** The forward direction: `forward`. */
         FORWARD: 'forward',
+        /** The reverse direction: `reverse`. */
         REVERSE: 'reverse'
     };
 
+
+    /**
+     * @typedef {Object} FlexCarouselConfig
+     * @prop {number} initialIndex - The initial item index (default: `0`).
+     * @prop {boolean} autoPlay - Whether to start playing the carousel after initialization (default: `true`).
+     * @prop {DIRECTION} direction - The direction the carousel slides (default: `DIRECTION.FORWARD`).
+     * @prop {number} speed - The speed (in ms) of the carousel (default: `5000`).
+     */
+
+    /**
+     * @typedef {Object} FlexCarouselIndicatorConfig
+     * @prop {string} activeClass - The class to be applied to indicators when their item is active (default: '').
+     */
 
     const _datasetReplacer = /-(\w)?/g;
 
     const _registry = {};
 
     let _idSeed = 0;
-
     let _defaults = {
         FlexCarousel: {
             initialIndex: 0,
@@ -23,6 +42,7 @@
         }
     };
 
+    // converts a value to a number, or the value itself, if it is not convertable
     function _tryParseNumber(value) {
         // convert to number if value is a number, or string containing a valid numberic representation
         // filter out null, '', and  '    '
@@ -31,23 +51,28 @@
         return (!value || !String.prototype.trim.call(value) || isNaN(value)) ? value : +value;
     }
 
+    // gets a Set from the registry for a given key
     function _getRegistrySet(name) {
         return _registry[name] || new Set();
     }
 
+    // adds a value to the Set for a given key in the registry
     function _addRegistryValue(name, carousel) {
         (_registry[name] = (_registry[name] || new Set())).add(carousel);
     }
 
+    // convert an attribute name to a dataset name
     function _attributeToDatasetName(attribute) {
         return attribute.replace(_datasetReplacer, (match, letter) => letter.toUpperCase());
     }
 
+    // returns the string for a given attribute, preferring dataset over attribute name
     function _getElementData(el, attribute) {
         let datasetName = _attributeToDatasetName(attribute);
-        return el && (el.dataset[datasetName] || el.getAttribute(attribute) || '');
+        return (el && (el.dataset[datasetName] || el.getAttribute(attribute))) || '';
     }
 
+    // returns the object that represents the key: value pairs from the flex-carousel-item dataset/attribute
     function _getItemElementData(el) {
         let data = _getElementData(el, 'flex-carousel-item') || "";
         let pairs = data.split(';');
@@ -65,6 +90,7 @@
         }, {});
     }
 
+    // returns a string that is the id of an element; sets the id if none exists
     function _getElementId(el) {
         let id = el.getAttribute('id');
 
@@ -76,6 +102,7 @@
         return id;
     }
 
+    // returns a number that is the next carousel in the rotation based on the given direction
     function _getNextIndex(carousel, direction) {
         let index = 0;
 
@@ -97,6 +124,7 @@
         return index;
     }
 
+    // sets the aria-hidden attribute value based on the active item
     function _setAriaVisibility(items, currentIndex) {
         if (items && items.length > 0) {
             for (let i = 0, l = items.length; i < l; i++) {
@@ -106,6 +134,7 @@
         }
     }
 
+    // sets the aria-controls attribute of a FlexCarouselControl
     function _setAriaControls(control, targets) {
         let ariaControls;
 
@@ -132,9 +161,7 @@
         /**
          * Creates a FlexCarousel.
          * @param {Element} el - The Element to use as a carousel.
-         * @param {Object} config - Configuration for the carousel.
-         * @param {string} config.direction - The initial direction of the carousel's slide.
-         * @param {number} config.speed - The default speed of the carousel's slide in ms. 
+         * @param {?FlexCarouselConfig} config - Configuration for the carousel.
          */
         constructor(el, config) {
             if (!el) {
@@ -197,7 +224,7 @@
 
         /**
          * Moves the carousel to the given position.
-         * @param {(number|string)} direction - The zero based index of the target item, or the strings `'forward'` (or `'+1'`), or `'backward'` (or `'-1'`).
+         * @param {(string|number)} direction - The zero based index of the target item, or the strings `'forward'` (or `'+1'`), or `'backward'` (or `'-1'`).
          */
         slide(direction) {
             this.currentIndex = _getNextIndex(this, direction);
@@ -253,7 +280,7 @@
         /**
          * Sets the global default settings for carousels.
          * @static
-         * @param {Object} defaults - The default global options.
+         * @param {FlexCarouselConfig} defaults - The default global options.
          */
         static set defaults(defaults) {
             _defaults.FlexCarousel = defaults;
@@ -294,7 +321,15 @@
         }
     }
 
+    /**
+     * Class responsible for carousel indicator functionality.
+     */
     class FlexCarouselIndicator {
+        /**
+         * Creates a FlexCarouselIndicator.
+         * @param {Element} el - The Element to use as a carousel indicator.
+         * @param {?FlexCarouselIndicatorConfig} config - Configuration for the carousel indicator.
+         */
         constructor(el, config) {
             if (!el) throw 'FlexCarouselIndicator needs an Element!';
             this.el = el;
@@ -314,6 +349,11 @@
             });
         }
 
+        /**
+         * 
+         * @param {CustomEvent} e - The CustomEvent representing `fc:slid`.
+         * @param {number} e.detail - The index of the current item.
+         */
         onslid(e) {
             let currentIndex = parseInt(e.detail),
                 active = currentIndex === this.index;
@@ -329,24 +369,36 @@
             }
         }
 
+        /**
+         * Gets the global default settings for carousel indicators.
+         * @static
+         */
         static get defaults() {
             return _defaults.FlexCarouselIndicator;
         }
 
+        /**
+         * Sets the global default settings for carousel indicators.
+         * @static
+         * @param {FlexCarouselIndicatorConfig} defaults - The default global options.
+         */
         static set defaults(defaults) {
             _defaults.FlexCarouselIndicator = defaults;
         }
     }
 
+    // expose classes on window
     w.FlexCarousel = FlexCarousel;
     w.FlexCarouselControl = FlexCarouselControl;
     w.FlexCarouselIndicator = FlexCarouselIndicator;
 
+    // attach default initialization handler
     d.addEventListener('fc:init', function () {
         d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
         d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
         d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach((el) => new FlexCarouselIndicator(el));
     });
 
+    // dispatch initialization event
     document.dispatchEvent(new CustomEvent('fc:init'));
 })(window, document);
