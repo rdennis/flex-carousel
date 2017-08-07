@@ -13,18 +13,22 @@
     "babel-preset-env": "^1.6.0",
     "documentation": "^5.0.1",
     "eslint": "^4.3.0",
-    "http-server": "^0.10.0"
+    "http-server": "^0.10.0",
+    "npm-watch": "^0.2.0"
   },
   "scripts": {
     "clean": "rm -rf build",
     "lint": "eslint src/**.js",
-    "prebuild": "npm run lint",
+    "prebuild": "npm run clean && npm run lint",
     "build:min": "mkdir -p build && babel src/flex-carousel.js --out-file build/flex-carousel.min.js --presets=babili",
     "build": "npm run build:min && babel src/flex-carousel.js --out-file build/flex-carousel.js --source-maps ",
-    "watch": "npm run build:min -- --watch & npm run build -- --watch",
-    "documentation": "documentation readme src/flex-carousel.js --section=API",
-    "web": "npm run -s build && http-server ./",
-    "dev": "npm run -s watch & npm run -s web"
+    "watch": "npm-watch build",
+    "web": "http-server ./",
+    "dev": "npm run web & npm run watch",
+    "documentation": "documentation readme src/flex-carousel.js --section=API"
+  },
+  "watch": {
+    "build": "src/*.js"
   },
   "repository": {
     "type": "git",
