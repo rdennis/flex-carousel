@@ -215,7 +215,7 @@
         /**
          * Creates a FlexCarousel.
          * @param {Element} el - The Element to use as a carousel.
-         * @param {?FlexCarouselConfig} config - Configuration for the carousel.
+         * @param {FlexCarouselConfig} [config] - Configuration for the carousel.
          */
         constructor(el, config) {
             if (!el) {
@@ -392,7 +392,7 @@
         /**
          * Creates a FlexCarouselIndicator.
          * @param {Element} el - The Element to use as a carousel indicator.
-         * @param {?FlexCarouselIndicatorConfig} config - Configuration for the carousel indicator.
+         * @param {FlexCarouselIndicatorConfig} [config] - Configuration for the carousel indicator.
          */
         constructor(el, config) {
             if (!el) throw 'FlexCarouselIndicator needs an Element!';
