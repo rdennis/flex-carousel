@@ -20,6 +20,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var _registry = new Map();
 
     var _idSeed = 0;
+
     var _defaults = {
         FlexCarousel: {
             initialIndex: 0,
@@ -42,6 +43,28 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }).join(seperator);
     }
 
+    function _tryParseNumber(value) {
+        return !value || !String.prototype.trim.call(value) || isNaN(value) ? value : +value;
+    }
+
+    function _attributeToDatasetName(attribute) {
+        return attribute.replace(_datasetReplacer, function (match, letter) {
+            return letter.toUpperCase();
+        });
+    }
+
+    function _getRegistrySet(name) {
+        return _registry.get(name) || new Set();
+    }
+
+    function _addRegistryValue(name, carousel) {
+        if (!_registry.has(name)) {
+            _registry.set(name, new Set());
+        }
+
+        _getRegistrySet(name).add(carousel);
+    }
+
     function _getPrefixedAttributeName(el, attribute) {
         var attributeFullName = attribute,
             datasetName = void 0;
@@ -60,26 +83,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return attribute;
     }
 
-    function _tryParseNumber(value) {
-        return !value || !String.prototype.trim.call(value) || isNaN(value) ? value : +value;
-    }
+    function _getElementId(el) {
+        var id = el.getAttribute('id');
 
-    function _getRegistrySet(name) {
-        return _registry.get(name) || new Set();
-    }
-
-    function _addRegistryValue(name, carousel) {
-        if (!_registry.has(name)) {
-            _registry.set(name, new Set());
+        if (!id) {
+            id = 'flex-carousel-' + ++_idSeed;
+            el.setAttribute('id', id);
         }
 
-        _getRegistrySet(name).add(carousel);
-    }
-
-    function _attributeToDatasetName(attribute) {
-        return attribute.replace(_datasetReplacer, function (match, letter) {
-            return letter.toUpperCase();
-        });
+        return id;
     }
 
     function _getElementData(el, attribute) {
@@ -109,37 +121,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }, {});
     }
 
-    function _getElementId(el) {
-        var id = el.getAttribute('id');
-
-        if (!id) {
-            id = 'flex-carousel-' + ++_idSeed;
-            el.setAttribute('id', id);
-        }
-
-        return id;
-    }
-
-    function _getNextIndex(carousel, direction) {
-        var index = 0;
-
-        if (typeof direction === 'string') {
-            if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                index = carousel.currentIndex + 1;
-            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                index = carousel.currentIndex - 1;
-            } else {
-                index = parseInt(direction, 10) || 0;
-            }
-        } else if (typeof direction === 'number') {
-            index = direction;
-        }
-
-        index = index < 0 ? carousel.itemCount - 1 : index;
-        index = index > carousel.itemCount - 1 ? 0 : index;
-        return index;
-    }
-
     function _setAriaVisibility(items, currentIndex) {
         if (items && items.length > 0) {
             for (var i = 0, l = items.length; i < l; i++) {
@@ -164,6 +145,26 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             control.el.setAttribute('aria-controls', ariaControls.trim());
         }
+    }
+
+    function _getNextIndex(carousel, direction) {
+        var index = 0;
+
+        if (typeof direction === 'string') {
+            if (direction === '+1' || direction === DIRECTION.FORWARD) {
+                index = carousel.currentIndex + 1;
+            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
+                index = carousel.currentIndex - 1;
+            } else {
+                index = parseInt(direction, 10) || 0;
+            }
+        } else if (typeof direction === 'number') {
+            index = direction;
+        }
+
+        index = index < 0 ? carousel.itemCount - 1 : index;
+        index = index > carousel.itemCount - 1 ? 0 : index;
+        return index;
     }
 
     function _setIndicatorActive(indicator, currentIndex) {

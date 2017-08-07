@@ -24,13 +24,19 @@
      * @prop {string} activeClass - The class to be applied to indicators when their item is active (default: '').
      */
 
+    // list of attribute prefixes to be used for data
     const _attributePrefixes = ['flex-carousel', 'fc'];
 
+    // regex to convert attribute names to dataset names
     const _datasetReplacer = /-(\w)?/g;
 
+    // map of carousel group names to lists of carousels
     const _registry = new Map();
 
+    // seed used for creating "unique" carousel ids
     let _idSeed = 0;
+
+    // backing variable for default objects
     let _defaults = {
         FlexCarousel: {
             initialIndex: 0,
@@ -43,10 +49,40 @@
         }
     };
 
+    // joins strs with seperator, filtering out empty strings from strs
     function _join(seperator, ...strs) {
         return strs.filter((s) => !!s).join(seperator);
     }
 
+    // converts a value to a number, or the value itself, if it is not convertable
+    function _tryParseNumber(value) {
+        // convert to number if value is a number, or string containing a valid numberic representation
+        // filter out null, '', and  '    '
+        // note: isNaN(<null || ''>) return false, so we catch them with !value first
+        // note: isNaN('   ') returns false, so we catch it with !trim(value)
+        return (!value || !String.prototype.trim.call(value) || isNaN(value)) ? value : +value;
+    }
+
+    // convert an attribute name to a dataset name
+    function _attributeToDatasetName(attribute) {
+        return attribute.replace(_datasetReplacer, (match, letter) => letter.toUpperCase());
+    }
+
+    // gets a Set from the registry for a given key
+    function _getRegistrySet(name) {
+        return _registry.get(name) || new Set();
+    }
+
+    // adds a value to the Set for a given key in the registry
+    function _addRegistryValue(name, carousel) {
+        if (!_registry.has(name)) {
+            _registry.set(name, new Set());
+        }
+
+        _getRegistrySet(name).add(carousel);
+    }
+
+    // gets the full prefixed attribute name of a given attribute
     function _getPrefixedAttributeName(el, attribute) {
         let attributeFullName = attribute,
             datasetName;
@@ -65,32 +101,16 @@
         return attribute;
     }
 
-    // converts a value to a number, or the value itself, if it is not convertable
-    function _tryParseNumber(value) {
-        // convert to number if value is a number, or string containing a valid numberic representation
-        // filter out null, '', and  '    '
-        // note: isNaN(<null || ''>) return false, so we catch them with !value first
-        // note: isNaN('   ') returns false, so we catch it with !trim(value)
-        return (!value || !String.prototype.trim.call(value) || isNaN(value)) ? value : +value;
-    }
+    // returns a string that is the id of an element; sets the id if none exists
+    function _getElementId(el) {
+        let id = el.getAttribute('id');
 
-    // gets a Set from the registry for a given key
-    function _getRegistrySet(name) {
-        return _registry.get(name) || new Set();
-    }
-
-    // adds a value to the Set for a given key in the registry
-    function _addRegistryValue(name, carousel) {
-        if (!_registry.has(name)) {
-            _registry.set(name, new Set());
+        if (!id) {
+            id = `flex-carousel-${++_idSeed}`;
+            el.setAttribute('id', id);
         }
 
-        _getRegistrySet(name).add(carousel);
-    }
-
-    // convert an attribute name to a dataset name
-    function _attributeToDatasetName(attribute) {
-        return attribute.replace(_datasetReplacer, (match, letter) => letter.toUpperCase());
+        return id;
     }
 
     // returns the string for a given attribute, preferring dataset over attribute name
@@ -100,7 +120,7 @@
         return (el && (el.dataset[datasetName] || el.getAttribute(attributeFullName))) || '';
     }
 
-    // returns the object that represents the key: value pairs from the flex-carousel-item dataset/attribute
+    // returns the object that represents the key: value pairs from the item dataset/attribute
     function _getItemElementData(el) {
         let attributeFullName = _getPrefixedAttributeName(el, 'item');
         let data = _getElementData(el, attributeFullName) || '';
@@ -117,40 +137,6 @@
 
             return obj;
         }, {});
-    }
-
-    // returns a string that is the id of an element; sets the id if none exists
-    function _getElementId(el) {
-        let id = el.getAttribute('id');
-
-        if (!id) {
-            id = `flex-carousel-${++_idSeed}`;
-            el.setAttribute('id', id);
-        }
-
-        return id;
-    }
-
-    // returns a number that is the next carousel in the rotation based on the given direction
-    function _getNextIndex(carousel, direction) {
-        let index = 0;
-
-        if (typeof direction === 'string') {
-            if (direction === '+1' || direction === DIRECTION.FORWARD) {
-                index = carousel.currentIndex + 1;
-            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
-                index = carousel.currentIndex - 1;
-            } else {
-                index = parseInt(direction, 10) || 0;
-            }
-        } else if (typeof direction === 'number') {
-            index = direction;
-        }
-
-        // if < 0, wrap to end, if > itemCount -1, wrap to beginning
-        index = index < 0 ? carousel.itemCount - 1 : index;
-        index = index > carousel.itemCount - 1 ? 0 : index;
-        return index;
     }
 
     // sets the aria-hidden attribute value based on the active item
@@ -180,6 +166,28 @@
 
             control.el.setAttribute('aria-controls', ariaControls.trim());
         }
+    }
+
+    // returns a number that is the next carousel in the rotation based on the given direction
+    function _getNextIndex(carousel, direction) {
+        let index = 0;
+
+        if (typeof direction === 'string') {
+            if (direction === '+1' || direction === DIRECTION.FORWARD) {
+                index = carousel.currentIndex + 1;
+            } else if (direction === '-1' || direction === DIRECTION.REVERSE) {
+                index = carousel.currentIndex - 1;
+            } else {
+                index = parseInt(direction, 10) || 0;
+            }
+        } else if (typeof direction === 'number') {
+            index = direction;
+        }
+
+        // if < 0, wrap to end, if > itemCount -1, wrap to beginning
+        index = index < 0 ? carousel.itemCount - 1 : index;
+        index = index > carousel.itemCount - 1 ? 0 : index;
+        return index;
     }
 
     // sets the active state of an indicator based on the currentIndex
