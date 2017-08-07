@@ -26,7 +26,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             initialIndex: 0,
             autoPlay: true,
             direction: DIRECTION.FORWARD,
-            speed: 5000
+            speed: 5000,
+            prefixes: _attributePrefixes
         },
         FlexCarouselIndicator: {
             activeClass: ''

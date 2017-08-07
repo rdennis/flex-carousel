@@ -17,6 +17,7 @@
      * @prop {boolean} autoPlay - Whether to start playing the carousel after initialization (default: `true`).
      * @prop {DIRECTION} direction - The direction the carousel slides (default: `DIRECTION.FORWARD`).
      * @prop {number} speed - The speed (in ms) of the carousel (default: `5000`).
+     * @prop {Array<string>} prefixes - A reference to the list of prefixes that can be used for components (default: `['flex-carousel', 'fc']`)
      */
 
     /**
@@ -42,7 +43,8 @@
             initialIndex: 0,
             autoPlay: true,
             direction: DIRECTION.FORWARD,
-            speed: 5000
+            speed: 5000,
+            prefixes: _attributePrefixes
         },
         FlexCarouselIndicator: {
             activeClass: ''

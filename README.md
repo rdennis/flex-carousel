@@ -126,6 +126,7 @@ Type: [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
 -   `autoPlay` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether to start playing the carousel after initialization (default: `true`).
 -   `direction` **[DIRECTION](#direction)** The direction the carousel slides (default: `DIRECTION.FORWARD`).
 -   `speed` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** The speed (in ms) of the carousel (default: `5000`).
+-   `prefixes` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)>** A reference to the list of prefixes that can be used for components (default: `['flex-carousel', 'fc']`)
 
 ## FlexCarouselIndicatorConfig
 
