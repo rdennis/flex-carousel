@@ -11,6 +11,7 @@ A carousel using flexbox.
     -   [x] `fc:play`
     -   [x] `fc:pause`
     -   [x] `fc:slide`
+    -   [x] `fc:slid`
 -   [ ] support `flex-direction: column`?
 
 # Usage
@@ -25,13 +26,13 @@ Syntax: `data-flex-carousel="<carousel-group-name>"`
 
 Used to mark an element as a control for a given carousel group.
 
-Syntax: `data-flex-carousel-control="<carousel-group-name>:<event>:<parameter>"`
+Syntax: `data-flex-carousel-control="<carousel-group-name>:<event>[:<parameter>]"`
 
 ## `data-flex-carousel-item` _optional_
 
 Used to configure an individual item of the carousel.
 
-Syntax: `data-flex-carousel-item="<property>: <value>; <property>: <value>;..."`
+Syntax: `data-flex-carousel-item="<property>: <value>[...; <property>: <value>]"`
 
 Available properties:
 
@@ -45,30 +46,34 @@ Syntax: `data-flex-carousel-indicator="<carousel-group-name>:<item-index>[:<acti
 
 ## JS Initialization
 
-By default, all tags marked with `[data-flex-carousel]` or `[data-flex-carousel-control]` are initialized when flex-carousel loads. This can be prevented by stopping the `fc:init` event on the `document`. You can then create the components yourself.
+By default, all tags marked with a recognized attribute are initialized when flex-carousel loads. This can be prevented by stopping the `fc:init` event on the `document`. You can then create the components yourself.
 
 ```javascript
 document.addEventListener('fc:init', (e) => {
     e.stopImmediatePropagation();
 
-    let carousel = new FlexCarousel(document.getElementById('my-carousel'));
+    new FlexCarousel(document.getElementById('my-carousel'));
 
-    let nextButton = new FlexCarouselControl(document.getElementById('next-button'));
+    new FlexCarouselControl(document.getElementById('next-button'));
+
+    document.querySelectorAll('.my-indicator').forEach((el) => new FlexCarouselIndicator(el));
 });
 ```
 
 # Examples
 
+The `data-*` format is suggested, but not required. For instance `data-flex-carousel` and `flex-carousel` will work equally well. If both attributes are found on an element, the `data-*` version will be used.
+
 ```html
 <div class="carousel-wrapper">
     <div class="carousel" data-flex-carousel="carousel">
-        <div>...</div>
-        <div>...</div>
+        <div data-flex-carousel-item="speed: 10000">...</div>
+        <div data-flex-carousel-item="speed: 8000">...</div>
         ...
     </div>
     <ul>
-        <li data-flex-carousel-control="carousel:slide:0">...</li>
-        <li data-flex-carousel-control="carousel:slide:1">...</li>
+        <li data-flex-carousel-control="carousel:slide:0" data-flex-carousel-indicator="carousel:0">...</li>
+        <li data-flex-carousel-control="carousel:slide:1" data-flex-carousel-indicator="carousel:1">...</li>
         ...
     </ul>
     <button type="button" data-flex-carousel-control="carousel:slide:-1">Prev</button>
@@ -76,6 +81,36 @@ document.addEventListener('fc:init', (e) => {
     <button type="button" data-flex-carousel-control="carousel:slide:play">Play</button>
     <button type="button" data-flex-carousel-control="carousel:slide:pause">Pause</button>
 </div>
+```
+
+By default, the shortened attribute `data-fc` can also be used.
+
+```html
+<div class="carousel-wrapper">
+    <div class="carousel" data-fc="carousel">
+        <div data-fc-item="speed: 10000">...</div>
+        <div data-fc-item="speed: 8000">...</div>
+        ...
+    </div>
+    <ul>
+        <li data-fc-control="carousel:slide:0" data-fc-indicator="carousel:0">...</li>
+        <li data-fc-control="carousel:slide:1" data-fc-indicator="carousel:1">...</li>
+        ...
+    </ul>
+    <button type="button" data-fc-control="carousel:slide:-1">Prev</button>
+    <button type="button" data-fc-control="carousel:slide:+1">Next</button>
+    <button type="button" data-fc-control="carousel:slide:play">Play</button>
+    <button type="button" data-fc-control="carousel:slide:pause">Pause</button>
+</div>
+```
+
+ The list of available attribute prefixes can be modified with the property `FlexCarousel.defaults.prefixes`. To register new prefixes, attach a handler to the `fc:init` event on the `document`.
+
+```js
+// register the attribute prefix 'foo' to allow the use of '[data-]foo', '[data-]foo-control', etc.
+document.addEventListener('fc:init', function oninit() {
+    FlexCarousel.defaults.prefixes.push('foo');
+});
 ```
 
 # Development

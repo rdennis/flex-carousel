@@ -99,7 +99,7 @@
 
         let carousel = document.querySelector('[data-flex-carousel]');
 
-        ['slide', 'play', 'pause', 'toggle'].forEach((eventName) => {
+        ['slide', 'play', 'pause', 'toggle', 'slid'].forEach((eventName) => {
             carousel.addEventListener(`fc:${eventName}`, function (e) {
                 console.log(`${e.type}:${e.detail}`);
             });
