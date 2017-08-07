@@ -13,6 +13,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         REVERSE: 'reverse'
     };
 
+    var _attributePrefixes = ['flex-carousel', 'fc'];
+
     var _datasetReplacer = /-(\w)?/g;
 
     var _registry = new Map();
@@ -29,6 +31,34 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             activeClass: ''
         }
     };
+
+    function _join(seperator) {
+        for (var _len = arguments.length, strs = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            strs[_key - 1] = arguments[_key];
+        }
+
+        return strs.filter(function (s) {
+            return !!s;
+        }).join(seperator);
+    }
+
+    function _getPrefixedAttributeName(el, attribute) {
+        var attributeFullName = attribute,
+            datasetName = void 0;
+
+        for (var i = 0, l = _attributePrefixes.length; i < l; i++) {
+            var prefix = _attributePrefixes[i];
+
+            attributeFullName = _join('-', prefix, attribute);
+            datasetName = _attributeToDatasetName(attributeFullName);
+
+            if (el.dataset.hasOwnProperty(datasetName) || el.hasAttribute(attributeFullName)) {
+                return attributeFullName;
+            }
+        }
+
+        return attribute;
+    }
 
     function _tryParseNumber(value) {
         return !value || !String.prototype.trim.call(value) || isNaN(value) ? value : +value;
@@ -53,12 +83,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
 
     function _getElementData(el, attribute) {
-        var datasetName = _attributeToDatasetName(attribute);
-        return el && (el.dataset[datasetName] || el.getAttribute(attribute)) || '';
+        var attributeFullName = _getPrefixedAttributeName(el, attribute);
+        var datasetName = _attributeToDatasetName(attributeFullName);
+        return el && (el.dataset[datasetName] || el.getAttribute(attributeFullName)) || '';
     }
 
     function _getItemElementData(el) {
-        var data = _getElementData(el, 'flex-carousel-item') || "";
+        var attributeFullName = _getPrefixedAttributeName(el, 'item');
+        var data = _getElementData(el, attributeFullName) || '';
         var pairs = data.split(';');
 
         return pairs.reduce(function (obj, pair) {
@@ -162,7 +194,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             this.el = el;
             this.id = _getElementId(this.el);
-            this.name = _getElementData(el, 'flex-carousel').split(':')[0];
+
+            var _getElementData$split = _getElementData(el).split(':');
+
+            var _getElementData$split2 = _slicedToArray(_getElementData$split, 1);
+
+            this.name = _getElementData$split2[0];
+
             this.currentIndex = this.settings.initialIndex;
 
             this.items = this.el.children;
@@ -279,13 +317,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             if (!el) throw 'FlexCarouselControl needs an Element!';
             this.el = el;
 
-            var _getElementData$split = _getElementData(el, 'flex-carousel-control').split(':');
+            var _getElementData$split3 = _getElementData(el, 'control').split(':');
 
-            var _getElementData$split2 = _slicedToArray(_getElementData$split, 3);
+            var _getElementData$split4 = _slicedToArray(_getElementData$split3, 3);
 
-            this.targetName = _getElementData$split2[0];
-            this.event = _getElementData$split2[1];
-            this.param = _getElementData$split2[2];
+            this.targetName = _getElementData$split4[0];
+            this.event = _getElementData$split4[1];
+            this.param = _getElementData$split4[2];
 
 
             _setAriaControls(this, _getRegistrySet(this.targetName));
@@ -323,13 +361,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             this.settings = Object.assign({}, FlexCarouselIndicator.defaults, config);
 
-            var _getElementData$split3 = _getElementData(el, 'flex-carousel-indicator').split(':');
+            var _getElementData$split5 = _getElementData(el, 'indicator').split(':');
 
-            var _getElementData$split4 = _slicedToArray(_getElementData$split3, 3);
+            var _getElementData$split6 = _slicedToArray(_getElementData$split5, 3);
 
-            this.targetName = _getElementData$split4[0];
-            this.index = _getElementData$split4[1];
-            this.activeClass = _getElementData$split4[2];
+            this.targetName = _getElementData$split6[0];
+            this.index = _getElementData$split6[1];
+            this.activeClass = _getElementData$split6[2];
 
             this.index = parseInt(this.index);
             this.activeClass = this.activeClass || this.settings.activeClass;
@@ -371,14 +409,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     d.addEventListener('fc:init', function oninit(e) {
         e.target.removeEventListener(e.type, oninit);
 
-        d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach(function (el) {
-            return new FlexCarousel(el);
-        });
-        d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach(function (el) {
-            return new FlexCarouselControl(el);
-        });
-        d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach(function (el) {
-            return new FlexCarouselIndicator(el);
+        var typeMap = { '': FlexCarousel, 'control': FlexCarouselControl, 'indicator': FlexCarouselIndicator };
+        Object.keys(typeMap).forEach(function (type) {
+            var ctor = typeMap[type];
+
+            var selector = _attributePrefixes.reduce(function (selector, prefix) {
+                var attribute = _join('-', prefix, type);
+                return _join(',', selector, '[data-' + attribute + ']', '[' + attribute + ']');
+            }, '');
+
+            d.querySelectorAll(selector).forEach(function (el) {
+                return new ctor(el);
+            });
         });
     });
 

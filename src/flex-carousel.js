@@ -11,7 +11,6 @@
         REVERSE: 'reverse'
     };
 
-
     /**
      * @typedef {Object} FlexCarouselConfig
      * @prop {number} initialIndex - The initial item index (default: `0`).
@@ -24,6 +23,8 @@
      * @typedef {Object} FlexCarouselIndicatorConfig
      * @prop {string} activeClass - The class to be applied to indicators when their item is active (default: '').
      */
+
+    const _attributePrefixes = ['flex-carousel', 'fc'];
 
     const _datasetReplacer = /-(\w)?/g;
 
@@ -41,6 +42,28 @@
             activeClass: ''
         }
     };
+
+    function _join(seperator, ...strs) {
+        return strs.filter((s) => !!s).join(seperator);
+    }
+
+    function _getPrefixedAttributeName(el, attribute) {
+        let attributeFullName = attribute,
+            datasetName;
+
+        for (let i = 0, l = _attributePrefixes.length; i < l; i++) {
+            let prefix = _attributePrefixes[i];
+
+            attributeFullName = _join('-', prefix, attribute);
+            datasetName = _attributeToDatasetName(attributeFullName);
+
+            if (el.dataset.hasOwnProperty(datasetName) || el.hasAttribute(attributeFullName)) {
+                return attributeFullName;
+            }
+        }
+
+        return attribute;
+    }
 
     // converts a value to a number, or the value itself, if it is not convertable
     function _tryParseNumber(value) {
@@ -72,13 +95,15 @@
 
     // returns the string for a given attribute, preferring dataset over attribute name
     function _getElementData(el, attribute) {
-        let datasetName = _attributeToDatasetName(attribute);
-        return (el && (el.dataset[datasetName] || el.getAttribute(attribute))) || '';
+        let attributeFullName = _getPrefixedAttributeName(el, attribute);
+        let datasetName = _attributeToDatasetName(attributeFullName);
+        return (el && (el.dataset[datasetName] || el.getAttribute(attributeFullName))) || '';
     }
 
     // returns the object that represents the key: value pairs from the flex-carousel-item dataset/attribute
     function _getItemElementData(el) {
-        let data = _getElementData(el, 'flex-carousel-item') || "";
+        let attributeFullName = _getPrefixedAttributeName(el, 'item');
+        let data = _getElementData(el, attributeFullName) || '';
         let pairs = data.split(';');
 
         return pairs.reduce((obj, pair) => {
@@ -191,7 +216,7 @@
 
             this.el = el;
             this.id = _getElementId(this.el);
-            this.name = _getElementData(el, 'flex-carousel').split(':')[0];
+            [this.name] = _getElementData(el).split(':');
             this.currentIndex = this.settings.initialIndex;
 
             this.items = this.el.children;
@@ -330,7 +355,7 @@
             this.el = el;
 
             // get data from format "<targetName>:<event>:<param>"
-            [this.targetName, this.event, this.param] = _getElementData(el, 'flex-carousel-control').split(':');
+            [this.targetName, this.event, this.param] = _getElementData(el, 'control').split(':');
 
             _setAriaControls(this, _getRegistrySet(this.targetName));
             this.el.addEventListener('click', () => this.onclick());
@@ -365,7 +390,7 @@
 
             this.settings = Object.assign({}, FlexCarouselIndicator.defaults, config);
 
-            [this.targetName, this.index, this.activeClass] = _getElementData(el, 'flex-carousel-indicator').split(':');
+            [this.targetName, this.index, this.activeClass] = _getElementData(el, 'indicator').split(':');
             this.index = parseInt(this.index);
             this.activeClass = this.activeClass || this.settings.activeClass;
 
@@ -416,9 +441,19 @@
         // remove this listener
         e.target.removeEventListener(e.type, oninit);
 
-        d.querySelectorAll('[data-flex-carousel],[flex-carousel]').forEach((el) => new FlexCarousel(el));
-        d.querySelectorAll('[data-flex-carousel-control],[flex-carousel-control]').forEach((el) => new FlexCarouselControl(el));
-        d.querySelectorAll('[data-flex-carousel-indicator],[flex-carousel-indicator]').forEach((el) => new FlexCarouselIndicator(el));
+        let typeMap = { '': FlexCarousel, 'control': FlexCarouselControl, 'indicator': FlexCarouselIndicator };
+        Object.keys(typeMap).forEach((type) => {
+            let ctor = typeMap[type];
+
+            let selector = _attributePrefixes.reduce((selector, prefix) => {
+                // form prefix-type if type if not empty
+                let attribute = _join('-', prefix, type);
+                return _join(',', selector, `[data-${attribute}]`, `[${attribute}]`);
+            }, '');
+
+            // instantiate component
+            d.querySelectorAll(selector).forEach((el) => new ctor(el));
+        });
     });
 
     // dispatch initialization event
